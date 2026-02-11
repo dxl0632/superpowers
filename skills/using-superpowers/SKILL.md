@@ -4,7 +4,7 @@ description: Use when starting any conversation - establishes how to find and us
 ---
 
 <SUBAGENT-STOP>
-If you were dispatched as a subagent to execute a specific task, STOP. This skill is not for you. Your dispatch prompt is your instructions. Do not invoke superpowers skills. Go execute your task.
+If you were dispatched as a subagent to execute a specific task, skip this skill. It is for top-level sessions only.
 </SUBAGENT-STOP>
 
 <EXTREMELY-IMPORTANT>
