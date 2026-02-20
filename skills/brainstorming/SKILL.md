@@ -1,117 +1,135 @@
 ---
 name: brainstorming
-description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior. Explores user intent, requirements and design before implementation."
+description: "You MUST use this before any creative work - creating features, building components, adding functionality, or modifying behavior."
 ---
 
 # Brainstorming Ideas Into Designs
 
-Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
-
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
+Turn ideas into designs through collaborative dialogue. Scale your effort to the task — a link in a header needs a different process than a new subsystem — but always confirm you understand what the user wants before you build anything.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until:
+1. You have stated your understanding of the user's intent
+2. The user has confirmed that understanding
+
+This applies to every task regardless of size. The confirmation can be brief ("I'll add a GitHub icon-link to the header, styled to match the existing theme — sound right?"), but you must get it.
 </HARD-GATE>
 
-## Anti-Pattern: "This Is Too Simple To Need A Design"
+## Anti-Pattern: Skipping Understanding
 
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
+The failure mode is not "too little ceremony." It is jumping to implementation with unchecked assumptions. Simple tasks are where this happens most — you assume you know what the user wants and start editing. Even when you're right about the *what*, you miss preferences about the *how*.
 
-## Checklist
+## The Process
 
-You MUST create a task for each of these items and complete them in order:
+Scale every step to the task at hand. The process is the same whether the task takes five minutes or five days — but the depth changes.
 
-1. **Explore project context** — check files, docs, recent commits
-2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-3. **Propose 2-3 approaches** — with trade-offs and your recommendation
-4. **Present design** — in sections scaled to their complexity, get user approval after each section
-5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit
-6. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+Create tasks to track the steps you'll execute. For a small change, that might be steps 1–3 only. For a large project, all eight.
+
+### 1. Explore project context
+
+Check files, docs, recent commits. For a small change, glance at the relevant file. For a new system, explore broadly.
+
+### 2. Understand user intent
+
+- Ask questions one at a time to refine the idea
+- Prefer multiple choice when possible, but open-ended is fine too
+- Focus on purpose, constraints, and success criteria
+- Before detailed questions, assess scope: if the request spans multiple independent subsystems, flag that first. Help decompose before refining details.
+- If the project is too large for a single spec, help the user break it into sub-projects. Each sub-project gets its own brainstorm → plan → implementation cycle.
+
+### 3. Confirm understanding
+
+State what you believe the user wants. Get explicit confirmation before proceeding. This is the hard gate — everything after this step is optional depending on scope.
+
+### 4. Propose approaches
+
+- Propose 2-3 approaches with trade-offs
+- Lead with your recommendation and explain why
+- For straightforward tasks where you see only one reasonable approach, say so — but give the user a chance to disagree
+
+### 5. Present design and get approval
+
+- Scale each section to its complexity
+- Ask after each section whether it looks right
+- Cover what matters: architecture, components, data flow, error handling, testing — skip sections that don't apply
+- Go back and revise when something doesn't fit
+
+### 6. Write design doc (when warranted)
+
+- Save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+  - (User preferences for spec location override this default)
+- Use elements-of-style:writing-clearly-and-concisely skill if available
+- Commit to git
+
+### 7. Spec review (when warranted)
+
+1. Dispatch spec-document-reviewer subagent (see spec-document-reviewer-prompt.md)
+2. If issues found: fix, re-dispatch, repeat until approved
+3. If the loop exceeds 5 iterations, surface to human
+
+### 8. Transition to implementation
+
+- Invoke the writing-plans skill to create an implementation plan
+- Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
+
+### Skipping steps
+
+Steps 1–3 always happen. Steps 4–7 scale to the task.
+
+When you believe a step is unnecessary, **ask the user for permission to skip it.** Do not skip silently. For example:
+
+> "This is straightforward enough that I don't think we need a design doc or spec review — I'll propose a quick approach and we can go from there. Sound good?"
+
+The user may agree, or they may want the full process. Either way, they decide.
 
 ## Process Flow
 
 ```dot
 digraph brainstorming {
-    "Explore project context" [shape=box];
-    "Ask clarifying questions" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "Present design sections" [shape=box];
-    "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Invoke writing-plans skill" [shape=doublecircle];
+    "Explore context" [shape=box];
+    "Understand intent" [shape=box];
+    "User confirms understanding?" [shape=diamond];
+    "Propose approaches" [shape=box];
+    "Present design" [shape=box];
+    "User approves?" [shape=diamond];
+    "Write design doc\n(when warranted)" [shape=box];
+    "Spec review\n(when warranted)" [shape=box];
+    "Invoke writing-plans" [shape=doublecircle];
 
-    "Explore project context" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "Present design sections";
-    "Present design sections" -> "User approves design?";
-    "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Invoke writing-plans skill";
+    "Explore context" -> "Understand intent";
+    "Understand intent" -> "User confirms understanding?";
+    "User confirms understanding?" -> "Understand intent" [label="no, refine"];
+    "User confirms understanding?" -> "Propose approaches" [label="yes"];
+    "Propose approaches" -> "Present design";
+    "Present design" -> "User approves?";
+    "User approves?" -> "Present design" [label="no, revise"];
+    "User approves?" -> "Write design doc\n(when warranted)" [label="yes"];
+    "Write design doc\n(when warranted)" -> "Spec review\n(when warranted)";
+    "Spec review\n(when warranted)" -> "Invoke writing-plans";
 }
 ```
 
-**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
-
-## The Process
-
-**Understanding the idea:**
-- Check out the current project state first (files, docs, recent commits)
-- Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
-- If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
-- For appropriately-scoped projects, ask questions one at a time to refine the idea
-- Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
-- Focus on understanding: purpose, constraints, success criteria
-
-**Exploring approaches:**
-- Propose 2-3 different approaches with trade-offs
-- Present options conversationally with your recommendation and reasoning
-- Lead with your recommended option and explain why
-
-**Presenting the design:**
-- Once you believe you understand what you're building, present the design
-- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
-- Ask after each section whether it looks right so far
-- Cover: architecture, components, data flow, error handling, testing
-- Be ready to go back and clarify if something doesn't make sense
+## Design Guidance
 
 **Design for isolation and clarity:**
-- Break the system into smaller units that each have one clear purpose, communicate through well-defined interfaces, and can be understood and tested independently
-- For each unit, you should be able to answer: what does it do, how do you use it, and what does it depend on?
-- Can someone understand what a unit does without reading its internals? Can you change the internals without breaking consumers? If not, the boundaries need work.
-- Smaller, well-bounded units are also easier for you to work with - you reason better about code you can hold in context at once, and your edits are more reliable when files are focused. When a file grows large, that's often a signal that it's doing too much.
+- Break the system into units with one clear purpose, well-defined interfaces, and independent testability
+- For each unit, answer: what does it do, how do you use it, what does it depend on?
+- If you can't understand a unit without reading its internals, or change its internals without breaking consumers, the boundaries need work
+- Smaller units are easier to reason about and edit reliably. A file that keeps growing is doing too much.
 
 **Working in existing codebases:**
 - Explore the current structure before proposing changes. Follow existing patterns.
-- Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries, tangled responsibilities), include targeted improvements as part of the design - the way a good developer improves code they're working in.
-- Don't propose unrelated refactoring. Stay focused on what serves the current goal.
-
-## After the Design
-
-**Documentation:**
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
-  - (User preferences for spec location override this default)
-- Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
-
-**Spec Review Loop:**
-After writing the spec document:
-1. Dispatch spec-document-reviewer subagent (see spec-document-reviewer-prompt.md)
-2. If Issues Found: fix, re-dispatch, repeat until Approved
-3. If loop exceeds 5 iterations, surface to human for guidance
-
-**Implementation:**
-- Invoke the writing-plans skill to create a detailed implementation plan
-- Do NOT invoke any other skill. writing-plans is the next step.
+- Where existing code has problems that affect the work, include targeted improvements in the design
+- Stay focused on what serves the current goal. Don't propose unrelated refactoring.
 
 ## Key Principles
 
-- **One question at a time** - Don't overwhelm with multiple questions
-- **Multiple choice preferred** - Easier to answer than open-ended when possible
-- **YAGNI ruthlessly** - Remove unnecessary features from all designs
-- **Explore alternatives** - Always propose 2-3 approaches before settling
-- **Incremental validation** - Present design, get approval before moving on
-- **Be flexible** - Go back and clarify when something doesn't make sense
+- **One question at a time** — don't overwhelm with multiple questions
+- **Multiple choice preferred** — easier to answer than open-ended when possible
+- **YAGNI ruthlessly** — remove unnecessary features from all designs
+- **Explore alternatives** — propose approaches before settling
+- **Incremental validation** — present, get approval, then move on
+- **Be flexible** — go back and clarify when something doesn't make sense
 
 ## Visual Companion (Claude Code Only)
 
