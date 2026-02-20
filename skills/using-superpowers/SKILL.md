@@ -90,6 +90,27 @@ When multiple skills could apply, use this order:
 
 The skill itself tells you which.
 
+## Available Agents
+
+In addition to skills, you have specialized **agents** you can dispatch via the Task tool. Agents run as separate processes with their own context — use them for focused work that shouldn't clutter the main conversation.
+
+**When to use agents vs doing it yourself:** Dispatch an agent when the task is self-contained (clear input, clear output) and doesn't require back-and-forth with the user. Do the work yourself when it requires conversation or iterative decisions.
+
+| Agent | subagent_type | When to dispatch |
+|-------|---------------|-----------------|
+| **code-explorer** | `feature-dev:code-explorer` | "How does X work?" — tracing execution paths, mapping architecture, understanding a feature deeply before modifying it |
+| **code-architect** | `feature-dev:code-architect` | Designing a new feature — analyzes existing patterns and produces an implementation blueprint with files, components, data flow |
+| **code-reviewer** (bugs) | `feature-dev:code-reviewer` | After writing code — reviews for bugs, security issues, convention violations. Uses confidence scoring, only reports issues ≥80 |
+| **code-reviewer** (plan) | `superpowers:code-reviewer` | After completing a plan step — reviews implementation against the original plan for alignment |
+| **code-simplifier** | `code-simplifier:code-simplifier` | After implementation is working — refactors recently-changed code for clarity and consistency without changing behavior |
+
+**Agent dispatch rules:**
+- **code-explorer before code-architect** — understand what exists before designing what's new
+- **code-reviewer after implementation** — review code after writing it, not before
+- **code-simplifier last** — only simplify code that's already working and reviewed
+- Agents are **read-only** (except code-simplifier) — they analyze and advise but don't modify code
+- You can dispatch multiple independent agents in parallel via multiple Task tool calls in one message
+
 ## User Instructions
 
 Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
