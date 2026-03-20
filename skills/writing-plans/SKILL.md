@@ -17,6 +17,28 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
+## Research Phase: Plan → Architect Pipeline
+
+Before writing the plan, gather strategic and structural intelligence using agents:
+
+### Step 0a: Strategy (Plan agent)
+Dispatch a `Plan` agent (subagent_type: `Plan`) with the design doc / requirements. It returns:
+- Recommended implementation sequence and step ordering
+- Key risks and trade-offs
+- Critical architectural decisions that need resolution
+- Dependencies between components
+
+### Step 0b: Blueprint (code-architect agent)
+Dispatch a `feature-dev:code-architect` agent with the Plan agent's strategy output. It returns:
+- Specific files to create/modify (with paths)
+- Existing patterns to follow (found by analyzing codebase)
+- Component designs and data flow
+- Build sequence matching the Plan agent's recommended order
+
+**Run these sequentially** — the architect needs the Plan agent's strategy (approach, sequence, trade-offs) to produce a useful blueprint. If the design doc already locks in the approach completely, they can run in parallel, but this is rare.
+
+Use the combined output (strategy + blueprint) to write the plan below. The Plan agent tells you WHAT order and WHY. The architect tells you WHICH files and HOW.
+
 ## Bite-Sized Task Granularity
 
 **Each step is one action (2-5 minutes):**
@@ -98,11 +120,13 @@ git commit -m "feat: add specific feature"
 
 After saving the plan, offer execution choice:
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Two execution options:**
+**"Plan complete and saved to `docs/plans/<filename>.md`. Three execution options:**
 
 **1. Subagent-Driven (this session)** - I dispatch fresh subagent per task, review between tasks, fast iteration
 
 **2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
+
+**3. Team Mode (this session, parallel)** - Spin up a coordinated team of agents. Best for plans with 3+ tasks that have interdependencies or need coordination (e.g., frontend + backend, or review loops)
 
 **Which approach?"**
 
@@ -114,3 +138,7 @@ After saving the plan, offer execution choice:
 **If Parallel Session chosen:**
 - Guide them to open new session in worktree
 - **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
+
+**If Team Mode chosen:**
+- **REQUIRED SUB-SKILL:** Use superpowers:dispatching-parallel-agents (Team Mode section)
+- Set up team, create tasks from plan, spawn teammates, let agents coordinate

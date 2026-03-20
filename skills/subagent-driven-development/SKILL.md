@@ -5,9 +5,9 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching fresh subagent per task, with three-stage quality gate after each: spec compliance → code quality → code simplification.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + three-stage review (spec → quality → simplify) = high quality, fast iteration
 
 ## When to Use
 
@@ -74,11 +74,13 @@ digraph process {
     "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
     "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
     "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
+    "Code quality reviewer subagent approves?" -> "Dispatch code-simplifier (code-simplifier:code-simplifier)" [label="yes"];
+    "Dispatch code-simplifier (code-simplifier:code-simplifier)" -> "Mark task complete in TodoWrite";
     "Mark task complete in TodoWrite" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:finishing-a-development-branch";
+    "Dispatch final code reviewer subagent for entire implementation" -> "Use superpowers:verification-before-completion";
+    "Use superpowers:verification-before-completion" -> "Use superpowers:finishing-a-development-branch";
 }
 ```
 
@@ -185,16 +187,15 @@ Done!
 
 **Quality gates:**
 - Self-review catches issues before handoff
-- Two-stage review: spec compliance, then code quality
+- Three-stage review: spec compliance → code quality → code simplification
 - Review loops ensure fixes actually work
 - Spec compliance prevents over/under-building
 - Code quality ensures implementation is well-built
+- Code simplification ensures clean, maintainable output
 
-**Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
-- Controller does more prep work (extracting all tasks upfront)
-- Review loops add iterations
-- But catches issues early (cheaper than debugging later)
+**UI tasks:**
+- For tasks involving UI work, include "Invoke `frontend-design:frontend-design` skill" in the implementer prompt
+- This ensures UI code follows design principles (typography, color, motion, spatial composition) rather than generic AI aesthetics
 
 ## Red Flags
 
@@ -227,16 +228,37 @@ Done!
 - Dispatch fix subagent with specific instructions
 - Don't try to fix manually (context pollution)
 
+## Team Mode Alternative
+
+For plans where tasks are **interdependent** and agents need to coordinate directly (e.g., frontend + backend, or tasks sharing API contracts), consider **team mode** instead:
+
+- Use `TeamCreate` to spin up persistent agents that can message each other
+- Agents coordinate directly via `SendMessage` rather than through you as relay
+- Better for full-stack features, review-fix loops, and shared contract work
+- See `superpowers:dispatching-parallel-agents` for team setup details
+
+**When to choose team mode over subagent-driven:**
+- Tasks have dependencies where one agent's output feeds another
+- Multiple agents need to coordinate on shared interfaces
+- You need review-fix loops without relaying between agents
+
 ## Integration
 
 **Required workflow skills:**
 - **superpowers:using-git-worktrees** - REQUIRED: Set up isolated workspace before starting
 - **superpowers:writing-plans** - Creates the plan this skill executes
 - **superpowers:requesting-code-review** - Code review template for reviewer subagents
+- **superpowers:verification-before-completion** - REQUIRED: Verify before claiming done
 - **superpowers:finishing-a-development-branch** - Complete development after all tasks
+
+**Agents used:**
+- **code-simplifier:code-simplifier** - Third review stage, simplifies approved code
+- **feature-dev:code-reviewer** - Spec and quality review stages
 
 **Subagents should use:**
 - **superpowers:test-driven-development** - Subagents follow TDD for each task
+- **frontend-design:frontend-design** - For UI implementation tasks
 
-**Alternative workflow:**
+**Alternative workflows:**
 - **superpowers:executing-plans** - Use for parallel session instead of same-session execution
+- **Team mode** (TeamCreate) - Use for interdependent tasks needing direct agent coordination

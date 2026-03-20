@@ -23,12 +23,13 @@ Every project goes through this process. A todo list, a single-function utility,
 
 You MUST create a task for each of these items and complete them in order:
 
-1. **Explore project context** — check files, docs, recent commits
+1. **Explore project context** — dispatch `Explore` agent ("very thorough") to map relevant code, patterns, and architecture. Don't manually Glob/Grep when the agent can do a comprehensive search. For deeper analysis, follow up with `feature-dev:code-explorer`
 2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
 3. **Propose 2-3 approaches** — with trade-offs and your recommendation
-4. **Present design** — in sections scaled to their complexity, get user approval after each section
+4. **Present design** — in sections scaled to their complexity, get user approval after each section. **If the feature involves UI:** invoke `frontend-design:frontend-design` skill to guide design thinking (tone, aesthetics, differentiation) and incorporate its principles into the design
 5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit
-6. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+6. **Create worktree** — invoke `superpowers:using-git-worktrees` to set up an isolated workspace for implementation
+7. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 ## Process Flow
 
@@ -48,7 +49,10 @@ digraph brainstorming {
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
     "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Invoke writing-plans skill";
+    "Create worktree (using-git-worktrees)" [shape=box];
+
+    "Write design doc" -> "Create worktree (using-git-worktrees)";
+    "Create worktree (using-git-worktrees)" -> "Invoke writing-plans skill";
 }
 ```
 
@@ -57,7 +61,7 @@ digraph brainstorming {
 ## The Process
 
 **Understanding the idea:**
-- Check out the current project state first (files, docs, recent commits)
+- Dispatch `Explore` agent to survey the project (files, docs, recent commits, relevant subsystems) — let the agent do the thorough search rather than manual Glob/Grep
 - Ask questions one at a time to refine the idea
 - Prefer multiple choice questions when possible, but open-ended is fine too
 - Only one question per message - if a topic needs more exploration, break it into multiple questions

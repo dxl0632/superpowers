@@ -51,6 +51,13 @@ You MUST complete each phase before proceeding to the next.
 
 **BEFORE attempting ANY fix:**
 
+0. **Dispatch Explore Agent First**
+   - Dispatch an `Explore` agent ("very thorough") to survey the relevant subsystem
+   - Give it the error message, file paths, and symptoms
+   - Let it map the architecture around the failure point before you dig in manually
+   - For deeper tracing, follow up with `feature-dev:code-explorer` on the specific area
+   - This replaces manual Glob/Grep chains — let the agent do the comprehensive search
+
 1. **Read Error Messages Carefully**
    - Don't skip past errors or warnings
    - They often contain the exact solution
@@ -282,6 +289,10 @@ These techniques are part of systematic debugging and available in this director
 - **`root-cause-tracing.md`** - Trace bugs backward through call stack to find original trigger
 - **`defense-in-depth.md`** - Add validation at multiple layers after finding root cause
 - **`condition-based-waiting.md`** - Replace arbitrary timeouts with condition polling
+
+**Agents to dispatch:**
+- **Explore** (subagent_type: `Explore`) - First step: survey the relevant subsystem and map the failure area
+- **code-explorer** (subagent_type: `feature-dev:code-explorer`) - Deep dive: trace execution paths when Explore isn't enough
 
 **Related skills:**
 - **superpowers:test-driven-development** - For creating failing test case (Phase 4, Step 1)

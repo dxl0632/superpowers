@@ -1,15 +1,32 @@
 ---
 name: dispatching-parallel-agents
-description: Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
+description: Use when facing 2+ tasks that can benefit from concurrent execution — includes parallel dispatch, subagent relay, and team mode
 ---
 
 # Dispatching Parallel Agents
 
 ## Overview
 
-When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
+When you have multiple tasks, running them sequentially wastes time. Choose the right parallelization strategy based on how much coordination the tasks need.
 
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
+**Core principle:** Match the coordination mechanism to the task dependencies.
+
+## Three Tiers of Parallelization
+
+| Tier | Mechanism | Coordination | Best for |
+|------|-----------|-------------|----------|
+| **Parallel dispatch** | Multiple Agent calls | None — fire and wait | Independent tasks, no shared state |
+| **Subagent relay** | Fresh agent per task, you relay | You pass context between | Light dependencies, assembly-line |
+| **Team mode** | TeamCreate + persistent agents | Agents message each other directly | Interdependent work, review loops, shared contracts |
+
+### Decision heuristic:
+```
+Are tasks independent?
+  Yes → Parallel dispatch (simple, fast)
+  No → Do agents need to talk to EACH OTHER?
+    No  → Subagent relay (you pass context)
+    Yes → Team mode (agents coordinate directly)
+```
 
 ## When to Use
 
@@ -178,3 +195,48 @@ From debugging session (2025-10-03):
 - All investigations completed concurrently
 - All fixes integrated successfully
 - Zero conflicts between agent changes
+
+## Team Mode (Tier 3)
+
+When tasks are **interdependent** and agents need to coordinate directly, use team mode.
+
+### When to Use Team Mode
+- 3+ tasks where agent output feeds into another agent's work
+- Review-fix loops (reviewer finds issue → implementer fixes → re-review)
+- Multiple agents working on shared contracts (frontend + backend agreeing on API shape)
+- Full-stack features where changes need to stay synchronized
+
+### Team Setup
+```
+TeamCreate → define team purpose
+TaskCreate → add tasks from plan
+Agent(team_name, name) → spawn teammates
+TaskUpdate(owner) → assign tasks
+SendMessage → coordinate between agents
+```
+
+### Example: Full-Stack Feature Team
+```
+Lead (you) → creates tasks, reviews progress, resolves conflicts
+├── backend-dev (general-purpose) — API endpoints, data layer
+├── frontend-dev (general-purpose) — UI components, state
+├── reviewer (code-reviewer) — reviews both, flags contract mismatches
+└── simplifier (code-simplifier) — cleans up after reviews pass
+```
+
+Backend and frontend can message each other about types/API shape. Reviewer watches both and catches drift.
+
+### Example: Debug Investigation Team
+```
+Lead (you) → synthesizes findings, decides fix approach
+├── explorer-happy (Explore) — traces the working path
+├── explorer-error (Explore) — traces the failing path
+└── reviewer (code-reviewer) — cross-references both findings
+```
+
+### Team Mode Rules
+- Always assign a clear scope to each teammate
+- Use TaskCreate for all work items so progress is visible
+- Teammates communicate via SendMessage, not through you (that's the whole point)
+- Shut down teammates when done: SendMessage with type "shutdown_request"
+- Clean up with TeamDelete after all agents are done
