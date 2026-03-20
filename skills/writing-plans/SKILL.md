@@ -17,6 +17,10 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/plans/YYYY-MM-DD-<feature-name>.md`
 
+## Scope Check
+
+If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
+
 ## Research Phase: Plan → Architect Pipeline
 
 Before writing the plan, gather strategic and structural intelligence using agents:
@@ -115,6 +119,20 @@ git commit -m "feat: add specific feature"
 - Exact commands with expected output
 - Reference relevant skills with @ syntax
 - DRY, YAGNI, TDD, frequent commits
+
+## Plan Review Loop
+
+After writing the complete plan:
+
+1. Dispatch a single plan-document-reviewer subagent (see plan-document-reviewer-prompt.md) with precisely crafted review context — never your session history
+   - Provide: path to the plan document, path to spec document
+2. If Issues Found: fix the issues, re-dispatch reviewer for the whole plan
+3. If Approved: proceed to execution handoff
+
+**Review loop guidance:**
+- Single-pass review — if approved, move on. Don't re-review "just in case"
+- Only flag issues that would cause real problems during implementation
+- Minor wording and stylistic preferences are not blocking issues
 
 ## Execution Handoff
 

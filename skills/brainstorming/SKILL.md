@@ -24,34 +24,36 @@ Every project goes through this process. A todo list, a single-function utility,
 You MUST create a task for each of these items and complete them in order:
 
 1. **Explore project context** — dispatch `Explore` agent ("very thorough") to map relevant code, patterns, and architecture. Don't manually Glob/Grep when the agent can do a comprehensive search. For deeper analysis, follow up with `feature-dev:code-explorer`
-2. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
-3. **Propose 2-3 approaches** — with trade-offs and your recommendation
-4. **Present design** — in sections scaled to their complexity, get user approval after each section. **If the feature involves UI:** invoke `frontend-design:frontend-design` skill to guide design thinking (tone, aesthetics, differentiation) and incorporate its principles into the design
-5. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit
-6. **Create worktree** — invoke `superpowers:using-git-worktrees` to set up an isolated workspace for implementation
-7. **Transition to implementation** — invoke writing-plans skill to create implementation plan
+2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
+3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+4. **Propose 2-3 approaches** — with trade-offs and your recommendation
+5. **Present design** — in sections scaled to their complexity, get user approval after each section. **If the feature involves UI:** invoke `frontend-design:frontend-design` skill to guide design thinking (tone, aesthetics, differentiation) and incorporate its principles into the design
+6. **Write design doc** — save to `docs/plans/YYYY-MM-DD-<topic>-design.md` and commit. Dispatch spec-document-reviewer subagent (see spec-document-reviewer-prompt.md) to verify the spec is complete before proceeding.
+7. **Create worktree** — invoke `superpowers:using-git-worktrees` to set up an isolated workspace for implementation
+8. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 ## Process Flow
 
 ```dot
 digraph brainstorming {
     "Explore project context" [shape=box];
+    "Offer visual companion?" [shape=diamond];
     "Ask clarifying questions" [shape=box];
     "Propose 2-3 approaches" [shape=box];
     "Present design sections" [shape=box];
     "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
+    "Write design doc + spec review" [shape=box];
+    "Create worktree (using-git-worktrees)" [shape=box];
     "Invoke writing-plans skill" [shape=doublecircle];
 
-    "Explore project context" -> "Ask clarifying questions";
+    "Explore project context" -> "Offer visual companion?";
+    "Offer visual companion?" -> "Ask clarifying questions";
     "Ask clarifying questions" -> "Propose 2-3 approaches";
     "Propose 2-3 approaches" -> "Present design sections";
     "Present design sections" -> "User approves design?";
     "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Create worktree (using-git-worktrees)" [shape=box];
-
-    "Write design doc" -> "Create worktree (using-git-worktrees)";
+    "User approves design?" -> "Write design doc + spec review" [label="yes"];
+    "Write design doc + spec review" -> "Create worktree (using-git-worktrees)";
     "Create worktree (using-git-worktrees)" -> "Invoke writing-plans skill";
 }
 ```
@@ -98,3 +100,14 @@ digraph brainstorming {
 - **Explore alternatives** - Always propose 2-3 approaches before settling
 - **Incremental validation** - Present design, get approval before moving on
 - **Be flexible** - Go back and clarify when something doesn't make sense
+
+## Visual Companion
+
+A browser-based companion for showing mockups, diagrams, and visual options during brainstorming. Available as a tool — not a mode. Accepting the companion means it's available for questions that benefit from visual treatment; it does NOT mean every question goes through the browser.
+
+**Offering the companion:** When you anticipate that upcoming questions will involve visual content (mockups, layouts, diagrams), offer it once for consent:
+> "Some of what we're working on might be easier to explain if I can show it to you in a web browser. I can put together mockups, diagrams, comparisons, and other visuals as we go. This feature is still new and can be token-intensive. Want to try it? (Requires opening a local URL)"
+
+**This offer MUST be its own message.** Do not combine it with clarifying questions or other content. If they decline, proceed with text-only brainstorming.
+
+**Usage:** See `visual-companion.md` in this directory for the full guide — starting the server, writing HTML frames, CSS classes, browser events, and design tips.
