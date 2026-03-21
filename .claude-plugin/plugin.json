@@ -8,9 +8,5 @@
   "homepage": "https://github.com/dxl0632/superpowers",
   "repository": "https://github.com/dxl0632/superpowers",
   "license": "MIT",
-  "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "agents", "team-mode"],
-  "skills": "./skills/",
-  "agents": "./agents/",
-  "commands": "./commands/",
-  "hooks": "./hooks/hooks.json"
+  "keywords": ["skills", "tdd", "debugging", "collaboration", "best-practices", "workflows", "agents", "team-mode"]
 }
