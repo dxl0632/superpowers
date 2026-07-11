@@ -178,27 +178,45 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After saving the plan, **choose the best execution approach based on the plan's structure**, then present it for approval.
 
-**"Plan complete and saved to `docs/plans/<filename>.md`. Three execution options:**
+### Decision Logic
 
-**1. Subagent-Driven (this session, recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
+```dot
+digraph execution_choice {
+    "Plan saved" [shape=doublecircle];
+    "3+ tasks with interdependencies\nor cross-cutting coordination?" [shape=diamond];
+    "Tasks mostly independent?" [shape=diamond];
+    "Team Mode" [shape=box];
+    "Subagent-Driven" [shape=box];
+    "Subagent-Driven (default)" [shape=box];
 
-**2. Parallel Session (separate)** - Open new session with executing-plans, batch execution with checkpoints
+    "Plan saved" -> "3+ tasks with interdependencies\nor cross-cutting coordination?";
+    "3+ tasks with interdependencies\nor cross-cutting coordination?" -> "Team Mode" [label="yes"];
+    "3+ tasks with interdependencies\nor cross-cutting coordination?" -> "Tasks mostly independent?" [label="no"];
+    "Tasks mostly independent?" -> "Subagent-Driven" [label="yes"];
+    "Tasks mostly independent?" -> "Subagent-Driven (default)" [label="sequential"];
+}
+```
 
-**3. Team Mode (this session, parallel)** - Spin up a coordinated team of agents. Best for plans with 3+ tasks that have interdependencies or need coordination (e.g., frontend + backend, or review loops)
+| Signal | Approach |
+|--------|----------|
+| 3+ tasks with interdependencies needing coordination (e.g., frontend + backend, review loops) | **Team Mode** |
+| Tasks are independent or mostly sequential | **Subagent-Driven** |
 
-**Which approach?"**
+Subagent-Driven is the default — it covers most plans well (sequential or independent tasks, review between each).
 
-**If Subagent-Driven chosen:**
+### Present Recommendation
+
+**"Plan complete and saved to `docs/plans/<filename>.md`. I recommend **[chosen approach]** because [1-sentence reason based on plan structure]. OK to proceed?"**
+
+### Execution by Approach
+
+**Subagent-Driven:**
 - **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
 - Stay in this session
-- Fresh subagent per task + three-stage review (spec → quality → simplify)
+- Fresh subagent per task + code review
 
-**If Parallel Session chosen:**
-- Guide them to open new session in worktree
-- **REQUIRED SUB-SKILL:** New session uses superpowers:executing-plans
-
-**If Team Mode chosen:**
+**Team Mode:**
 - **REQUIRED SUB-SKILL:** Use superpowers:dispatching-parallel-agents (Team Mode section)
 - Set up team, create tasks from plan, spawn teammates, let agents coordinate

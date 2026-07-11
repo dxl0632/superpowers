@@ -30,6 +30,48 @@ Are tasks independent?
     Yes → Team mode (agents coordinate directly)
 ```
 
+## Available Agent Types
+
+### Research Agents
+
+| Agent | subagent_type | When to dispatch |
+|-------|---------------|-----------------|
+| **Explore** | `Explore` | Fast codebase search — "where does X live?", file patterns, keyword search. Use as first research step |
+| **code-explorer** | `feature-dev:code-explorer` | Deep analysis — "how does X work?" Traces execution paths, maps architecture. Use when Explore isn't enough |
+| **Plan** | `Plan` | Strategy and sequencing — "what's the approach?" Trade-offs, step ordering, risks. Use before code-architect |
+
+### Design Agents
+
+| Agent | subagent_type | When to dispatch |
+|-------|---------------|-----------------|
+| **code-architect** | `feature-dev:code-architect` | Implementation blueprint — analyzes existing patterns, produces files/components/data flow. Pair with Plan output |
+
+### Quality Agents (post-write — dispatch after ANY code is written)
+
+| Agent | subagent_type | When to dispatch |
+|-------|---------------|-----------------|
+| **code-reviewer** (bugs) | `feature-dev:code-reviewer` | Reviews for bugs, security issues, convention violations. Confidence >=80 only |
+| **code-reviewer** (plan) | `superpowers:code-reviewer` | Reviews implementation against the original plan for alignment |
+| **code-simplifier** | `code-simplifier:code-simplifier` | After code-reviewer passes — refactors for clarity without changing behavior |
+
+### Skills as Agent Context
+
+The **frontend-design** skill (`frontend-design:frontend-design`) is not a dispatchable agent, but reference it when prompting agents working on UI — during brainstorming, plan execution, or team mode.
+
+### Standard Pipeline
+
+```
+Explore → code-explorer → Plan → code-architect → [implement] → code-reviewer → code-simplifier
+```
+
+- **Explore first** — fast search to orient before deep analysis
+- **code-explorer before code-architect** — understand what exists before designing what's new
+- **Plan before code-architect** — strategy before blueprint for non-trivial features
+- **code-reviewer after ANY code is written** — every implementation step, not just debugging
+- **code-simplifier after code-reviewer passes** — only simplify working, reviewed code
+- Agents are **read-only** (except code-simplifier)
+- Dispatch independent agents in parallel via multiple Agent tool calls in one message
+
 ## When to Use
 
 ```dot
@@ -150,56 +192,12 @@ Return: Summary of what you found and what you fixed.
 **Exploratory debugging:** You don't know what's broken yet
 **Shared state:** Agents would interfere (editing same files, using same resources)
 
-## Real Example from Session
+## After Agents Return
 
-**Scenario:** 6 test failures across 3 files after major refactoring
-
-**Failures:**
-- agent-tool-abort.test.ts: 3 failures (timing issues)
-- batch-completion-behavior.test.ts: 2 failures (tools not executing)
-- tool-approval-race-conditions.test.ts: 1 failure (execution count = 0)
-
-**Decision:** Independent domains - abort logic separate from batch completion separate from race conditions
-
-**Dispatch:**
-```
-Agent 1 → Fix agent-tool-abort.test.ts
-Agent 2 → Fix batch-completion-behavior.test.ts
-Agent 3 → Fix tool-approval-race-conditions.test.ts
-```
-
-**Results:**
-- Agent 1: Replaced timeouts with event-based waiting
-- Agent 2: Fixed event structure bug (threadId in wrong place)
-- Agent 3: Added wait for async tool execution to complete
-
-**Integration:** All fixes independent, no conflicts, full suite green
-
-**Time saved:** 3 problems solved in parallel vs sequentially
-
-## Key Benefits
-
-1. **Parallelization** - Multiple investigations happen simultaneously
-2. **Focus** - Each agent has narrow scope, less context to track
-3. **Independence** - Agents don't interfere with each other
-4. **Speed** - 3 problems solved in time of 1
-
-## Verification
-
-After agents return:
-1. **Review each summary** - Understand what changed
-2. **Check for conflicts** - Did agents edit same code?
-3. **Run full suite** - Verify all fixes work together
-4. **Spot check** - Agents can make systematic errors
-
-## Real-World Impact
-
-From debugging session (2025-10-03):
-- 6 failures across 3 files
-- 3 agents dispatched in parallel
-- All investigations completed concurrently
-- All fixes integrated successfully
-- Zero conflicts between agent changes
+1. **Review each summary** — understand what changed
+2. **Check for conflicts** — did agents edit same code?
+3. **Run full suite** — verify all fixes work together
+4. **Spot check** — agents can make systematic errors
 
 ## Team Mode (Tier 3)
 

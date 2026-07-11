@@ -59,90 +59,11 @@ If your harness appears here, read its reference file for special instructions:
 - Pi: `references/pi-tools.md`
 - Antigravity: `references/antigravity-tools.md`
 
-## Available Agents
+## Agents
 
-In addition to skills, you have specialized **agents** you can dispatch via the Agent tool. Agents run as separate processes with their own context — use them for focused work that shouldn't clutter the main conversation.
+Dispatch agents via the Agent tool for self-contained work that doesn't need user back-and-forth. For agent types, dispatch rules, standard pipeline, and team mode: **REQUIRED REFERENCE:** See superpowers:dispatching-parallel-agents.
 
-**When to use agents vs doing it yourself:** Dispatch an agent when the task is self-contained (clear input, clear output) and doesn't require back-and-forth with the user. Do the work yourself when it requires conversation or iterative decisions.
-
-### Research Agents
-
-| Agent | subagent_type | When to dispatch |
-|-------|---------------|-----------------|
-| **Explore** | `Explore` | Fast codebase search — "where does X live?", file patterns, keyword search. Use as first research step before deeper analysis |
-| **code-explorer** | `feature-dev:code-explorer` | Deep analysis — "how does X work?" Traces execution paths, maps architecture, documents dependencies. Use when Explore isn't enough |
-| **Plan** | `Plan` | Strategy and sequencing — "what's the approach?" Identifies trade-offs, step ordering, risks. Use before code-architect for non-trivial features |
-
-### Design Agents
-
-| Agent | subagent_type | When to dispatch |
-|-------|---------------|-----------------|
-| **code-architect** | `feature-dev:code-architect` | Implementation blueprint — analyzes existing patterns, produces specific files/components/data flow. Pair with Plan agent output |
-
-### Quality Agents (post-write — dispatch after ANY code is written)
-
-| Agent | subagent_type | When to dispatch |
-|-------|---------------|-----------------|
-| **code-reviewer** (bugs) | `feature-dev:code-reviewer` | After writing code — reviews for bugs, security issues, convention violations. Confidence scoring, only reports issues >=80 |
-| **plan-alignment reviewer** | `general-purpose` (prompted with the `skills/requesting-code-review/code-reviewer.md` template) | After completing a plan step — reviews implementation against the original plan for alignment |
-| **code-simplifier** | `code-simplifier:code-simplifier` | After code-reviewer passes — refactors recently-changed code for clarity and consistency without changing behavior |
-
-### Skills as Agent Context
-
-The **frontend-design** skill (`frontend-design:frontend-design`) is not a dispatchable agent, but can be referenced when building teams or prompting agents working on UI:
-- During **brainstorming**: invoke `frontend-design:frontend-design` when the feature involves UI to guide design thinking (tone, aesthetics, differentiation)
-- During **plan execution**: include "Invoke `frontend-design:frontend-design` skill before implementing this step" in plan tasks that involve UI work
-- During **team mode**: bake frontend-design guidance into UI-focused teammate prompts
-
-### Agent Dispatch Rules
-
-**Standard pipeline:**
-```
-Explore → code-explorer → Plan → code-architect → [implement] → code-reviewer → code-simplifier
-```
-
-- **Explore first** — fast search to orient before deep analysis
-- **code-explorer before code-architect** — understand what exists before designing what's new
-- **Plan before code-architect** — strategy before blueprint for non-trivial features
-- **code-reviewer after ANY code is written** — not just debugging, every implementation step
-- **code-simplifier after code-reviewer passes** — only simplify working, reviewed code
-- Agents are **read-only** (except code-simplifier) — they analyze and advise but don't modify code
-- Dispatch multiple independent agents in parallel via multiple Agent tool calls in one message
-
-### Team Mode
-
-For complex, interdependent work where agents need to coordinate, use **team mode** (`TeamCreate`) instead of simple parallel dispatch.
-
-**When to use team mode:**
-- 3+ interdependent tasks (agents need each other's output)
-- Work requiring review-fix loops (reviewer finds issue → implementer fixes → re-review)
-- Multiple agents coordinating on shared contracts (e.g., frontend + backend agreeing on API shape)
-
-**When NOT to use team mode:**
-- Tasks are fully independent → use parallel agent dispatch instead
-- Single-threaded work → do it yourself or use subagent-driven-development
-
-**Decision heuristic:** See `superpowers:dispatching-parallel-agents` for the full three-tier model (parallel dispatch → subagent relay → team mode).
-
-**Example team compositions:**
-
-Feature build team:
-```
-Lead (you) → creates tasks, reviews progress
-├── explorer    — maps relevant subsystems (Explore or code-explorer)
-├── architect   — designs blueprint (code-architect, after explorer reports)
-├── implementer — writes code (general-purpose agent)
-├── reviewer    — reviews each piece as written (code-reviewer)
-└── simplifier  — cleans up after review passes (code-simplifier)
-```
-
-Full-stack team:
-```
-Lead (you)
-├── backend-dev   — API, data layer (general-purpose)
-├── frontend-dev  — UI, components (general-purpose, with frontend-design guidance)
-└── reviewer      — reviews both, flags contract mismatches (code-reviewer)
-```
+**Key rule:** code-reviewer after ANY code is written. Not optional.
 
 ## User Instructions
 
