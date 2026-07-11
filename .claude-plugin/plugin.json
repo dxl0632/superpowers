@@ -1,7 +1,7 @@
 {
   "name": "superpowers",
   "description": "Custom fork: Core skills library with agent orchestration, team mode, and quality gates",
-  "version": "4.3.0",
+  "version": "6.1.1",
   "author": {
     "name": "dxl0632"
   },

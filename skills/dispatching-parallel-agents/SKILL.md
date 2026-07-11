@@ -7,6 +7,8 @@ description: Use when facing 2+ tasks that can benefit from concurrent execution
 
 ## Overview
 
+You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+
 When you have multiple tasks, running them sequentially wastes time. Choose the right parallelization strategy based on how much coordination the tasks need.
 
 **Core principle:** Match the coordination mechanism to the task dependencies.
@@ -80,13 +82,16 @@ Each agent gets:
 
 ### 3. Dispatch in Parallel
 
-```typescript
-// In Claude Code / AI environment
-Task("Fix agent-tool-abort.test.ts failures")
-Task("Fix batch-completion-behavior.test.ts failures")
-Task("Fix tool-approval-race-conditions.test.ts failures")
-// All three run concurrently
+Issue all three subagent dispatches in the same response — they run in parallel:
+
+```text
+Subagent (general-purpose): "Fix agent-tool-abort.test.ts failures"
+Subagent (general-purpose): "Fix batch-completion-behavior.test.ts failures"
+Subagent (general-purpose): "Fix tool-approval-race-conditions.test.ts failures"
+# All three run concurrently.
 ```
+
+Multiple dispatch calls in one response = parallel execution. One per response = sequential.
 
 ### 4. Review and Integrate
 
@@ -220,7 +225,7 @@ SendMessage → coordinate between agents
 Lead (you) → creates tasks, reviews progress, resolves conflicts
 ├── backend-dev (general-purpose) — API endpoints, data layer
 ├── frontend-dev (general-purpose) — UI components, state
-├── reviewer (code-reviewer) — reviews both, flags contract mismatches
+├── reviewer (general-purpose, prompted with skills/requesting-code-review/code-reviewer.md) — reviews both, flags contract mismatches
 └── simplifier (code-simplifier) — cleans up after reviews pass
 ```
 
@@ -231,7 +236,7 @@ Backend and frontend can message each other about types/API shape. Reviewer watc
 Lead (you) → synthesizes findings, decides fix approach
 ├── explorer-happy (Explore) — traces the working path
 ├── explorer-error (Explore) — traces the failing path
-└── reviewer (code-reviewer) — cross-references both findings
+└── reviewer (general-purpose, prompted with skills/requesting-code-review/code-reviewer.md) — cross-references both findings
 ```
 
 ### Team Mode Rules
